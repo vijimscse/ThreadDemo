@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         /**
          * Thread and its looper implementation
          */
-        val looperThread = LooperThread();
+        val looperThread = LooperThread("Custom Looper Thread");
         looperThread.start()
 
         text.post(Runnable {
@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         handlerThread = HandlerThread("").apply {
             start()
             customHandler = CustomHandler(looper)
+
         }
 
         customHandler?.obtainMessage()?.also { msg ->
@@ -42,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    class LooperThread : Thread("Viji thread") {
+    class LooperThread(name: String) : Thread(name) {
         lateinit var mHandler: Handler
         override fun run() {
             Looper.prepare()
@@ -72,6 +73,12 @@ class MainActivity : AppCompatActivity() {
 
             Log.d(TAG, "Inside handle message " + msg?.what)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        customHandler.looper.quit()
     }
 }
 
