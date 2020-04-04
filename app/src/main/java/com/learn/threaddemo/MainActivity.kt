@@ -11,32 +11,35 @@ class MainActivity : AppCompatActivity() {
         val TAG = MainActivity.javaClass.simpleName
     }
 
+    private lateinit var customHandler: CustomHandler
     private lateinit var handlerThread: HandlerThread
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-//        handlerThread = HandlerThread("").apply {
-//            start()
-//            customHandler = CustomHandler(looper)
-//        }
-//
-//        customHandler?.obtainMessage()?.also { msg ->
-//            msg.arg1 = 100
-//            customHandler?.sendMessage(msg)
-//        }
-//
-//        val customThread = CustomThread()
-//        customThread.start()
-
-
-        val looper = LooperThread();
-        looper.start()
+        /**
+         * Thread and its looper implementation
+         */
+        val looperThread = LooperThread();
+        looperThread.start()
 
         text.post(Runnable {
-            LooperThread2(looper.mHandler).start()
+            LooperThread2(looperThread.mHandler).start()
         })
+
+        /**
+         * HandlerThread Implementation
+         */
+        handlerThread = HandlerThread("").apply {
+            start()
+            customHandler = CustomHandler(looper)
+        }
+
+        customHandler?.obtainMessage()?.also { msg ->
+            msg.what = 101
+            customHandler?.sendMessage(msg)
+        }
     }
 
     class LooperThread : Thread("Viji thread") {
@@ -47,7 +50,6 @@ class MainActivity : AppCompatActivity() {
                 override fun handleMessage(msg: Message?) {
                     Log.d(TAG, "Looper name " + looper.thread.name)
                     Log.d(TAG, "Inside handle message " + msg?.what)
-                    // text.text = "Hello"
                     looper.thread.interrupt()
 
                 }
@@ -62,4 +64,14 @@ class MainActivity : AppCompatActivity() {
             handler?.sendEmptyMessage(100)
         }
     }
+
+    class CustomHandler(looper: Looper): Handler(looper) {
+
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+
+            Log.d(TAG, "Inside handle message " + msg?.what)
+        }
+    }
 }
+
